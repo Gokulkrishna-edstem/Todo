@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 function GetSingleTodo() {
   const { id } = useParams();
@@ -24,6 +25,29 @@ function GetSingleTodo() {
     getSingleTodo();
   }, [id]);
 
+  async function handleDelete() {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
+        Swal.fire("Deleted!", "Your todo has been deleted.", "success");
+        navigate("/allTodo");
+      } catch (err) {
+        console.log(err);
+        Swal.fire("Error!", "Something went wrong.", "error");
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div className="w-full h-screen flex justify-center items-center bg-amber-950">
@@ -34,9 +58,9 @@ function GetSingleTodo() {
 
   return (
     <div
-      className={` w-full h-screen ${
+      className={`w-full h-screen ${
         singleTodo.completed ? "bg-green-950" : "bg-amber-950"
-      }  flex flex-col justify-center items-center text-white px-6 `}
+      } flex flex-col justify-center items-center text-white px-6`}
     >
       <div
         className={`${
@@ -58,12 +82,23 @@ function GetSingleTodo() {
             {singleTodo.completed ? "Yes ✅" : "No ❌"}
           </span>
         </p>
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-white text-amber-900 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition"
-        >
-          ⬅ Back
-        </button>
+
+        {/* Buttons */}
+        <div className="flex gap-4 justify-center">
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-white text-amber-900 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition"
+          >
+            ⬅ Back
+          </button>
+
+          <button
+            onClick={handleDelete}
+            className="bg-red-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-red-700 transition"
+          >
+            🗑 Delete
+          </button>
+        </div>
       </div>
     </div>
   );
